@@ -1,5 +1,6 @@
 import { scoutTaskSchema } from "@hybrid/contracts";
-import { buildRetrievalPlan } from "@hybrid/retrieval";
+import { buildRetrievalPlan, retrieveChunks } from "@hybrid/retrieval";
+import { closePool } from "@hybrid/db";
 
 async function main() {
   const raw = process.argv[2];
@@ -10,12 +11,15 @@ async function main() {
 
   const task = scoutTaskSchema.parse(JSON.parse(raw));
   const plan = buildRetrievalPlan(task);
+  const chunks = await retrieveChunks(plan);
 
-  console.log(JSON.stringify(plan, null, 2));
+  console.log(JSON.stringify({ plan, chunks }, null, 2));
 }
 
 main().catch((error) => {
   console.error(error);
   process.exit(1);
+}).finally(() => {
+  closePool().catch(() => {});
 });
 

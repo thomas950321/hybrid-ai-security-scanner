@@ -9,7 +9,12 @@
     "dev:api": "pnpm --filter @hybrid/api dev",
     "dev:scout": "pnpm --filter @hybrid/scout-worker dev",
     "dev:analyst": "pnpm --filter @hybrid/analyst-worker dev",
-    "dev:executor": "pnpm --filter @hybrid/executor-worker dev"
+    "dev:executor": "pnpm --filter @hybrid/executor-worker dev",
+    "dev:indexer": "pnpm --filter @hybrid/indexer dev",
+    "db:migrate": "pnpm --filter @hybrid/db migrate",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down",
+    "scan": "pnpm --filter @hybrid/scout-worker dev"
   },
   "devDependencies": {
     "@types/node": "latest",

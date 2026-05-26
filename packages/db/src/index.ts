@@ -23,3 +23,20 @@ export interface ScoutTaskRecord {
   severity: string;
 }
 
+export { getPool, closePool, withClient } from "./client.js";
+export {
+  insertCodeChunks,
+  queryCodeChunks,
+  createScanRun,
+  updateScanRunStatus,
+  insertScoutTask,
+  createVerificationRun,
+} from "./queries.js";
+
+export type {
+  InsertCodeChunkParams,
+  QueryCodeChunksParams,
+  CodeChunkRow,
+  ScoutTaskRow,
+} from "./queries.js";
+

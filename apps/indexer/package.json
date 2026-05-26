@@ -1,16 +1,16 @@
 {
-  "name": "@hybrid/retrieval",
+  "name": "@hybrid/indexer",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "dev": "tsx src/index.ts"
   },
   "dependencies": {
     "@hybrid/config": "workspace:*",
-    "@hybrid/contracts": "workspace:*",
     "@hybrid/db": "workspace:*",
+    "@hybrid/contracts": "workspace:*",
     "openai": "latest"
   }
 }
-

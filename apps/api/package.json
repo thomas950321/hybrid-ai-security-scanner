@@ -8,8 +8,16 @@
     "dev": "tsx src/index.ts"
   },
   "dependencies": {
+    "@hybrid/agent-core": "workspace:*",
     "@hybrid/config": "workspace:*",
-    "fastify": "latest"
+    "@hybrid/contracts": "workspace:*",
+    "@hybrid/db": "workspace:*",
+    "@hybrid/executor-worker": "workspace:*",
+    "@hybrid/nuclei": "workspace:*",
+    "@hybrid/retrieval": "workspace:*",
+    "ai": "latest",
+    "fastify": "latest",
+    "zod": "latest"
   }
 }
 

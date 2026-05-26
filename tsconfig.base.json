@@ -39,6 +39,9 @@
       ],
       "@hybrid/retrieval": [
         "packages/retrieval/src/index.ts"
+      ],
+      "@hybrid/executor-worker": [
+        "apps/executor-worker/src/index.ts"
       ]
     }
   }
