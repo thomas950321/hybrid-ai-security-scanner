@@ -1,0 +1,20 @@
+{
+  "name": "hybrid-ai-security-scanner",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.16.1",
+  "scripts": {
+    "build": "turbo run build",
+    "typecheck": "turbo run typecheck",
+    "dev:api": "pnpm --filter @hybrid/api dev",
+    "dev:scout": "pnpm --filter @hybrid/scout-worker dev",
+    "dev:analyst": "pnpm --filter @hybrid/analyst-worker dev",
+    "dev:executor": "pnpm --filter @hybrid/executor-worker dev"
+  },
+  "devDependencies": {
+    "@types/node": "latest",
+    "tsx": "latest",
+    "turbo": "latest",
+    "typescript": "latest"
+  }
+}

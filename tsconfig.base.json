@@ -1,0 +1,45 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": [
+      "ES2023"
+    ],
+    "types": [
+      "node"
+    ],
+    "strict": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
+    "forceConsistentCasingInFileNames": true,
+    "resolveJsonModule": true,
+    "declaration": true,
+    "sourceMap": true,
+    "ignoreDeprecations": "6.0",
+    "baseUrl": ".",
+    "paths": {
+      "@hybrid/agent-core": [
+        "packages/agent-core/src/index.ts"
+      ],
+      "@hybrid/config": [
+        "packages/config/src/index.ts"
+      ],
+      "@hybrid/contracts": [
+        "packages/contracts/src/index.ts"
+      ],
+      "@hybrid/db": [
+        "packages/db/src/index.ts"
+      ],
+      "@hybrid/nuclei": [
+        "packages/nuclei/src/index.ts"
+      ],
+      "@hybrid/retrieval": [
+        "packages/retrieval/src/index.ts"
+      ]
+    }
+  }
+}
