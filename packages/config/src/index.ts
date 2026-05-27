@@ -1,4 +1,10 @@
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { config as loadDotenv } from "dotenv";
 import { z } from "zod";
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+loadDotenv({ path: resolve(__dirname, "..", "..", "..", ".env") });
 
 const envSchema = z.object({
   NODE_ENV: z
@@ -13,7 +19,7 @@ const envSchema = z.object({
   AI_BASE_URL: z
     .string()
     .default("https://integrate.api.nvidia.com/v1"),
-  AI_API_KEY: z.string().min(1),
+  AI_API_KEY: z.string().default(""),
   EMBEDDING_MODEL: z.string().min(1).default("nvidia/nv-embed-qa-4"),
   EXECUTOR_MODEL: z.string().min(1).default("minimaxai/minimax-m2.7"),
 });

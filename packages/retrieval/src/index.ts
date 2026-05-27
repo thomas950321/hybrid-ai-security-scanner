@@ -60,11 +60,17 @@ export function buildRetrievalPlan(task: ScoutTask): RetrievalPlan {
 export async function retrieveChunks(
   plan: RetrievalPlan,
 ): Promise<RetrievedChunk[]> {
-  const embedding = await generateQueryEmbedding(plan.queryTerms);
+  let embedding: number[] | undefined;
+
+  try {
+    embedding = await generateQueryEmbedding(plan.queryTerms);
+  } catch {
+    // embedding unavailable — fall back to route-only search
+  }
 
   const rows = await queryCodeChunks({
     route: plan.route,
-    embedding,
+    ...(embedding ? { embedding } : {}),
     maxChunks: plan.maxChunks,
   });
 

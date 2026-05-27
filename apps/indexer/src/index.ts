@@ -1,5 +1,6 @@
-import { readdirSync, statSync } from "node:fs";
-import { resolve, relative, sep } from "node:path";
+import { readdirSync, statSync, existsSync } from "node:fs";
+import { resolve, relative, sep, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { randomUUID } from "node:crypto";
 
 import { closePool } from "@hybrid/db";
@@ -63,10 +64,21 @@ export interface IndexerOptions {
   clearExisting?: boolean;
 }
 
+function findProjectRoot(from: string): string {
+  let current = resolve(from);
+  while (current !== dirname(current)) {
+    if (existsSync(resolve(current, "pnpm-workspace.yaml"))) {
+      return current;
+    }
+    current = dirname(current);
+  }
+  return from;
+}
+
 export async function indexRepository(
   options: IndexerOptions = {},
 ): Promise<{ totalFiles: number; totalChunks: number }> {
-  const repoPath = resolve(options.repoPath ?? process.cwd());
+  const repoPath = resolve(options.repoPath ?? findProjectRoot(process.cwd()));
   const batchSize = options.batchSize ?? 20;
 
   console.log(`Indexing repository: ${repoPath}`);
@@ -108,20 +120,47 @@ export async function indexRepository(
     }
 
     const texts = allChunks.map((c) => c.content);
-    const embeddings = await generateEmbeddings(texts);
+    let embeddings: number[][] = [];
 
-    const dbRecords = allChunks.map((chunk, index) => ({
-      id: randomUUID(),
-      repositoryPath: repoPath,
-      filePath: chunk.filePath,
-      route: chunk.route,
-      symbolName: chunk.symbolName,
-      language: chunk.language,
-      content: chunk.content,
-      embedding: embeddings[index] ?? [],
-    }));
+    try {
+      embeddings = await generateEmbeddings(texts);
+    } catch (error) {
+      console.log(
+        "  Embedding generation failed, storing chunks without vectors.",
+      );
+    }
 
-    await insertCodeChunks(dbRecords);
+    const dbRecords: Array<{
+      id: string;
+      repositoryPath: string;
+      filePath: string;
+      route: string | null;
+      symbolName: string | null;
+      language: string;
+      content: string;
+      embedding: number[];
+    }> = [];
+
+    for (let index = 0; index < allChunks.length; index++) {
+      const emb = embeddings[index];
+      if (!emb || emb.length === 0) {
+        continue;
+      }
+      dbRecords.push({
+        id: randomUUID(),
+        repositoryPath: repoPath,
+        filePath: allChunks[index]!.filePath,
+        route: allChunks[index]!.route,
+        symbolName: allChunks[index]!.symbolName,
+        language: allChunks[index]!.language,
+        content: allChunks[index]!.content,
+        embedding: emb,
+      });
+    }
+
+    if (dbRecords.length > 0) {
+      await insertCodeChunks(dbRecords);
+    }
     totalChunks += allChunks.length;
 
     const progress = Math.min(i + batchSize, sourceFiles.length);
@@ -136,11 +175,14 @@ export async function indexRepository(
 
 async function main() {
   loadAppConfig();
-  const repoPath = process.argv[2] || process.cwd();
+  const args = process.argv.slice(2);
+  const repoPath =
+    args.find((arg) => !arg.startsWith("--")) ??
+    findProjectRoot(process.cwd());
 
   await indexRepository({
     repoPath,
-    clearExisting: process.argv.includes("--clear"),
+    clearExisting: args.includes("--clear"),
   });
 
   await closePool();

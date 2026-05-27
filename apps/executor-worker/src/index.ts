@@ -1,3 +1,5 @@
+import { resolve } from "node:path";
+import { fileURLToPath } from "node:url";
 import { generateText, stepCountIs, tool } from "ai";
 import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
@@ -130,13 +132,12 @@ export async function verifyFinding(input: {
   return result;
 }
 
-async function main() {
+const isDirectRun =
+  process.argv[1] &&
+  fileURLToPath(import.meta.url) === resolve(process.argv[1]);
+
+if (isDirectRun) {
   console.log(
     "Executor scaffold ready. Import verifyFinding() from this worker once retrieval output is wired in.",
   );
 }
-
-main().catch((error) => {
-  console.error(error);
-  process.exit(1);
-});

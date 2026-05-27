@@ -1,7 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { once } from "node:events";
 import { spawn } from "node:child_process";
-import { createInterface } from "node:readline";
 
 import {
   nucleiFindingSchema,
@@ -94,29 +93,37 @@ export async function runScoutScan(
   const tasks: ScoutTask[] = [];
   const stderrChunks: string[] = [];
 
+  child.stdout.setEncoding("utf8");
   child.stderr.setEncoding("utf8");
   child.stderr.on("data", (chunk: string) => {
     stderrChunks.push(chunk);
   });
 
-  const lineReader = createInterface({ input: child.stdout });
-  lineReader.on("line", (line) => {
-    if (!line.trim()) {
-      return;
-    }
+  let stdoutBuf = "";
+  child.stdout.on("data", (chunk: string) => {
+    stdoutBuf += chunk;
+    const lines = stdoutBuf.split("\n");
+    stdoutBuf = lines.pop() ?? "";
 
-    try {
-      const parsed = nucleiFindingSchema.parse(JSON.parse(line));
-      findings.push(parsed);
-
-      const task = findingToTask(parsed);
-      if (task) {
-        tasks.push(task);
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        continue;
       }
-    } catch (error) {
-      stderrChunks.push(
-        `Failed to parse Nuclei JSONL line: ${(error as Error).message}\n`,
-      );
+
+      try {
+        const parsed = nucleiFindingSchema.parse(JSON.parse(trimmed));
+        findings.push(parsed);
+
+        const task = findingToTask(parsed);
+        if (task) {
+          tasks.push(task);
+        }
+      } catch (error) {
+        stderrChunks.push(
+          `Failed to parse Nuclei JSONL line: ${(error as Error).message}\n`,
+        );
+      }
     }
   });
 
@@ -125,7 +132,6 @@ export async function runScoutScan(
   }, params.timeoutMs ?? 120_000);
 
   const [exitCode] = (await once(child, "close")) as [number | null];
-  await once(lineReader, "close");
   clearTimeout(timeout);
 
   if (exitCode !== 0) {

@@ -39,13 +39,19 @@ const scanRequestBodySchema = z.object({
   target: z.string().url(),
 });
 
-app.post<{ Body: z.infer<typeof scanRequestBodySchema> }>(
+app.post(
   "/scan",
-  {
-    schema: { body: scanRequestBodySchema },
-  },
   async (req, reply) => {
-    const { target } = req.body;
+    const parsed = scanRequestBodySchema.safeParse(req.body);
+
+    if (!parsed.success) {
+      return reply.status(400).send({
+        error: "Invalid request body",
+        details: parsed.error.issues,
+      });
+    }
+
+    const { target } = parsed.data;
     const runId = randomUUID();
 
     app.log.info({ runId, target }, "Starting scan pipeline");

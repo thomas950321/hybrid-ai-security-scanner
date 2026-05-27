@@ -385,7 +385,89 @@ POST /scan { target }
 
 ---
 
-## 9. 關鍵決策記錄
+## 9. 執行記錄
+
+### 9a. Pipeline 驗證 (2026-05-27)
+
+**測試掃描結果:** `http://localhost:8080` — Nuclei v3.8.0 / templates v10.4.3
+
+| 項目 | 數值 |
+|------|------|
+| Templates loaded | 6462 (signed, from projectdiscovery/nuclei-templates) |
+| Templates clustered | 450 (Reduced 386 Requests) |
+| Total potential requests | 14298 |
+| Actual requests sent | 35 |
+| Scan duration | ~7 seconds |
+| Findings | 0 |
+| Pipeline status | `completed` (short-circuit at Phase 1) |
+
+**Nuclei 指令參數:**
+```
+-target <url> -j -silent -or -pt http -severity low,medium,high,critical
+```
+
+**已知問題:**
+- Windows 上 `readline.createInterface` 的 `close` 事件在子程序無 stdout 輸出時不觸發 → 改用手動 `stdout.on("data")` + `\n` 分割 (`packages/nuclei/src/index.ts`)
+
+### 9b. 未來掃描流程與指令
+
+#### 快速掃描單一目標
+```powershell
+# 透過 API
+Invoke-RestMethod -Uri http://localhost:4000/scan `
+  -Method POST `
+  -ContentType "application/json" `
+  -Body '{"target":"http://<target>"}'
+
+# 查詢狀態 (替換 runId)
+Invoke-RestMethod -Uri http://localhost:4000/scans/<runId>
+```
+
+#### 直接執行 Nuclei（跳過 pipeline）
+```powershell
+# 基本掃描
+nuclei -target http://<target> -severity low,medium,high,critical -pt http
+
+# 更新模板庫
+nuclei -update
+
+# 指定特定類別模板
+nuclei -target http://<target> -tags cve,misconfig,exposure
+
+# 列出所有可用模板類別
+nuclei -tl | Select-String "tags:"
+```
+
+#### 完整 Pipeline 各階段獨立測試
+```powershell
+# Phase 1: Scout (Nuclei 掃描)
+pnpm --filter @hybrid/scout-worker dev http://<target>
+
+# Phase 2: Analyst (RAG 檢索，需 DB 有 indexed chunks)
+pnpm --filter @hybrid/analyst-dev '<json-scout-task>'
+
+# Phase 3: Executor (AI 驗證)
+pnpm --filter @hybrid/executor-worker dev <runId> <taskId>
+```
+
+#### 建立有漏洞的測試目標(vulnerable test target)
+```powershell
+# 使用 DVWA、VulnHub 或自定義含已知漏洞的 Node.js/express app
+node test-vuln-target.cjs   # 自訂義漏洞測試站
+```
+
+#### Indexer (為 Analyst 準備 code chunks)
+```powershell
+# 將 repo 程式碼索引到 pgvector
+pnpm --filter @hybrid/indexer dev [repo-path] [--clear]
+
+# 清除現有索引重新建立
+pnpm --filter @hybrid/indexer dev . --clear
+```
+
+---
+
+## 10. 關鍵決策記錄
 
 | 決策 | 說明 |
 |------|------|
