@@ -15,6 +15,7 @@
     "@hybrid/config": "workspace:*",
     "@hybrid/contracts": "workspace:*",
     "@hybrid/retrieval": "workspace:*",
+    "@ai-sdk/openai": "latest",
     "ai": "latest",
     "zod": "latest"
   }

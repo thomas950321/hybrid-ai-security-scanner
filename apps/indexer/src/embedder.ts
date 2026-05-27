@@ -11,13 +11,10 @@ function getClient(): OpenAI {
 
   const config = loadAppConfig();
 
-  if (!config.openAiApiKey) {
-    throw new Error(
-      "OPENAI_API_KEY is required for embedding generation. Add it to your .env file.",
-    );
-  }
-
-  client = new OpenAI({ apiKey: config.openAiApiKey });
+  client = new OpenAI({
+    baseURL: config.aiBaseUrl,
+    apiKey: config.aiApiKey,
+  });
   return client;
 }
 

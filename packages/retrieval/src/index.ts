@@ -27,10 +27,10 @@ function getOpenAI(): OpenAI {
     return openaiClient;
   }
   const config = loadAppConfig();
-  if (!config.openAiApiKey) {
-    throw new Error("OPENAI_API_KEY is required for retrieval.");
-  }
-  openaiClient = new OpenAI({ apiKey: config.openAiApiKey });
+  openaiClient = new OpenAI({
+    baseURL: config.aiBaseUrl,
+    apiKey: config.aiApiKey,
+  });
   return openaiClient;
 }
 

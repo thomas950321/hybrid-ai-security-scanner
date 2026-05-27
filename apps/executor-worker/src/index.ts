@@ -1,4 +1,5 @@
 import { generateText, stepCountIs, tool } from "ai";
+import { createOpenAI } from "@ai-sdk/openai";
 import { z } from "zod";
 
 import { loadAppConfig } from "@hybrid/config";
@@ -89,8 +90,13 @@ export async function verifyFinding(input: {
   const config = loadAppConfig();
   const task = scoutTaskSchema.parse(input.task);
 
+  const nvidia = createOpenAI({
+    baseURL: config.aiBaseUrl,
+    apiKey: config.aiApiKey,
+  });
+
   const result = await generateText({
-    model: config.executorModel,
+    model: nvidia(config.executorModel),
     prompt: [
       "You are verifying whether a potential web vulnerability is real.",
       "Use the provided route-level source context and decide whether to request an attack attempt.",

@@ -10,9 +10,12 @@ const envSchema = z.object({
     .string()
     .default("localhost,127.0.0.1,::1,host.docker.internal"),
   DATABASE_URL: z.string().min(1).optional(),
-  EMBEDDING_MODEL: z.string().min(1).default("text-embedding-3-small"),
-  EXECUTOR_MODEL: z.string().min(1).default("openai/gpt-5"),
-  OPENAI_API_KEY: z.string().min(1).optional(),
+  AI_BASE_URL: z
+    .string()
+    .default("https://integrate.api.nvidia.com/v1"),
+  AI_API_KEY: z.string().min(1),
+  EMBEDDING_MODEL: z.string().min(1).default("nvidia/nv-embed-qa-4"),
+  EXECUTOR_MODEL: z.string().min(1).default("minimaxai/minimax-m2.7"),
 });
 
 export interface AppConfig {
@@ -21,9 +24,10 @@ export interface AppConfig {
   nucleiPath: string;
   allowedHosts: string[];
   databaseUrl?: string;
+  aiBaseUrl: string;
+  aiApiKey: string;
   embeddingModel: string;
   executorModel: string;
-  openAiApiKey?: string;
 }
 
 export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
@@ -36,9 +40,10 @@ export function loadAppConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
     allowedHosts: parsed.SCANNER_ALLOWED_HOSTS.split(",")
       .map((value) => value.trim())
       .filter(Boolean),
+    aiBaseUrl: parsed.AI_BASE_URL,
+    aiApiKey: parsed.AI_API_KEY,
     embeddingModel: parsed.EMBEDDING_MODEL,
     executorModel: parsed.EXECUTOR_MODEL,
     ...(parsed.DATABASE_URL ? { databaseUrl: parsed.DATABASE_URL } : {}),
-    ...(parsed.OPENAI_API_KEY ? { openAiApiKey: parsed.OPENAI_API_KEY } : {}),
   };
 }
